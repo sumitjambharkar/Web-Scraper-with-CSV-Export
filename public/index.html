@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrape Products</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .url-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .url-group input {
+            flex: 1;
+            padding: 8px;
+            margin-right: 5px;
+        }
+        .url-group button {
+            padding: 8px;
+        }
+        #add-url {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scrape Product Data</h1>
+        <form action="/scrape" method="POST">
+            <div id="url-container">
+                <div class="url-group">
+                    <input type="text" name="urls" placeholder="Enter website URL" required>
+                    <button type="button" class="remove-url" onclick="removeInput(this)">Remove</button>
+                </div>
+            </div>
+            <button type="button" id="add-url">Add More URLs</button>
+            <br><br>
+            <button type="submit">Scrape Products</button>
+        </form>
+    </div>
+
+    <script>
+        const urlContainer = document.getElementById('url-container');
+        const addUrlButton = document.getElementById('add-url');
+
+        addUrlButton.addEventListener('click', () => {
+            const urlGroup = document.createElement('div');
+            urlGroup.className = 'url-group';
+            urlGroup.innerHTML = `
+                <input type="text" name="urls" placeholder="Enter website URL" required>
+                <button type="button" class="remove-url" onclick="removeInput(this)">Remove</button>
+            `;
+            urlContainer.appendChild(urlGroup);
+        });
+
+        function removeInput(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</body>
+</html>
