@@ -5,8 +5,9 @@ const { JSDOM } = jsdom;
 const Papa = require('papaparse');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 const app = express();
-const port = process.env.PORT 
+const port = process.env.PORT || 8000
 
 // Middleware to serve static files and parse request bodies
 app.use(express.urlencoded({ extended: true }));
@@ -28,39 +29,74 @@ const getHTML = async (url) => {
     }
 };
 
+
+// https://devotionalkart.com/product-category/buy-energy-and-reiki-healing-and-balancing-products-online/gemstone-bracelets
+
 // Function to scrape and convert HTML data to JSON
+// const convert = (htmlString) => {
+//     const dom = new JSDOM(htmlString);
+//     const { document } = dom.window;
+//     const elements = document.querySelectorAll('.card-wrapper.product-card-wrapper');
+
+//     const products = [];
+//     elements.forEach((card) => {
+//         const formatPrice = (priceString) => {
+//             const numericPrice = priceString.replace(/[^\d.]/g, '');
+//             return numericPrice || 'N/A';
+//         };
+
+//         const formatImageUrl = (url) => {
+//             if (url.startsWith('//')) {
+//                 return `https:${url}`;
+//             }
+//             return url;
+//         };
+
+//         const product = {
+//             name: card.querySelector('.card__heading a')?.textContent.trim() || 'N/A',
+//             vendor: card.querySelector('.product__vendor')?.textContent.trim() || 'N/A',
+//             price: formatPrice(card.querySelector('.price-item--sale')?.textContent.trim() || card.querySelector('.price-item--regular')?.textContent.trim() || 'N/A'),
+//             originalPrice: formatPrice(card.querySelector('.price-item--regular')?.textContent.trim() || 'N/A'),
+//             discount: card.querySelector('.badge')?.textContent.trim() || 'N/A',
+//             image: formatImageUrl(card.querySelector('img')?.getAttribute('src') || 'N/A'),
+//             link: card.querySelector('.card__heading a')?.getAttribute('href') || 'N/A'
+//         };
+//         products.push(product);
+//     });
+//     return products;
+// };
+
+
+
+// https://devotionalkart.com/product-category/buy-energy-and-reiki-healing-and-balancing-products-online/gemstone-bracelets
+
 const convert = (htmlString) => {
     const dom = new JSDOM(htmlString);
     const { document } = dom.window;
-    const elements = document.querySelectorAll('.card-wrapper.product-card-wrapper');
+    const elements = document.querySelectorAll('.product.type-product');
 
     const products = [];
-    elements.forEach((card) => {
+    elements.forEach((productElement) => {
         const formatPrice = (priceString) => {
             const numericPrice = priceString.replace(/[^\d.]/g, '');
             return numericPrice || 'N/A';
         };
 
-        const formatImageUrl = (url) => {
-            if (url.startsWith('//')) {
-                return `https:${url}`;
-            }
-            return url;
+        const product = {
+            name: productElement.querySelector('.woocommerce-loop-product__title')?.textContent.trim() || 'N/A',
+            price: formatPrice(productElement.querySelector('.price ins .woocommerce-Price-amount')?.textContent.trim() || 'N/A'),
+            originalPrice: formatPrice(productElement.querySelector('.price del .woocommerce-Price-amount')?.textContent.trim() || 'N/A'),
+            discount: productElement.querySelector('.onsale')?.textContent.trim() || 'N/A',
+            image: productElement.querySelector('img')?.getAttribute('src') || 'N/A',
+            link: productElement.querySelector('.woocommerce-LoopProduct-link')?.getAttribute('href') || 'N/A'
         };
 
-        const product = {
-            name: card.querySelector('.card__heading a')?.textContent.trim() || 'N/A',
-            vendor: card.querySelector('.product__vendor')?.textContent.trim() || 'N/A',
-            price: formatPrice(card.querySelector('.price-item--sale')?.textContent.trim() || card.querySelector('.price-item--regular')?.textContent.trim() || 'N/A'),
-            originalPrice: formatPrice(card.querySelector('.price-item--regular')?.textContent.trim() || 'N/A'),
-            discount: card.querySelector('.badge')?.textContent.trim() || 'N/A',
-            image: formatImageUrl(card.querySelector('img')?.getAttribute('src') || 'N/A'),
-            link: card.querySelector('.card__heading a')?.getAttribute('href') || 'N/A'
-        };
         products.push(product);
     });
+
     return products;
 };
+
 
 // Function to create a CSV file
 const createExcel = (productData) => {
